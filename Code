@@ -1,0 +1,2300 @@
+
+#####Topic 1: Getting Started with R#####
+
+#NOTE: pound sign (#) is a comment and will not be read
+#NOTE: R is case sensitive (i.e., "code" is different than "Code")
+
+###Getting started with packages
+#Installing a package
+install.packages('psych')
+install.packages("corrplot")
+install.packages("glmmTMB")
+install.packages("survival")
+install.packages("DataEditR")
+install.packages("tidyverse")
+install.packages("rhandsontable")
+install.packages("ggplot2")
+install.packages("EnvStats")
+install.packages("cluster")
+install.packages("plotly")
+
+#Loading a package (do every time you start R)
+library(psych)
+library(corrplot)
+library(glmmTMB)
+library(survival)
+library(DataEditR)
+library(tidyverse)
+library(rhandsontable)
+library(ggplot2)
+library(EnvStats)
+library(cluster)
+library(plotly)
+library(MASS) #Already installed with base R
+library(readr) #Already installed with base R
+library(readxl) #Already installed with base R
+library(haven) #Already installed with base R
+
+#This link includes the functions that Ray wrote
+source("https://raw.githubusercontent.com/JoshuaRayTanzer/Functions/main/Functions.R")
+
+###Loading data
+#From dropdowns, can go to:
+#   File>Import Dataset
+#and then select the file format from the menu
+
+#Using code, you can specify using the following
+#(to run code, select what you want to run,
+#and click "run" in the top right or type
+#control+enter)
+
+#For tab separated files
+data=read.table("file/location/Data.txt",sep="\t",header=T)
+
+#for CSV
+data=read.csv("file/location/Data.csv")
+
+#for Excel
+data=read_excel("file/location/Data.xlsx")
+
+#for SPSS
+data=read_sav("file/location/Data.sav")
+
+#You can also import manually
+#c() lets you define a list vector of inputs (numbers or letters)
+
+
+x1=c(1,2,3)
+x2=c("a","b","c")
+
+#This is one form of an "object", to view an object
+#select its name and run it
+
+x2
+x1
+
+#Note that all objects can be found in the top right "Global Environment"
+
+#cbind combines multiple lists as columns
+#rbind combines multiple lists as rows
+rows=rbind(x1,x2)
+rows
+
+cols=cbind(x1,x2)
+cols
+
+#These are matrices, can be converted to "data frame"
+#which simplifies how you can interact with it
+df=data.frame(cols)
+df
+
+#You can also change the column and row names
+#of a data frame to make it look nice
+
+colnames(df)=c("Number","Letter")
+row.names(df)=c("First","Second","Third")
+df
+
+#Sometimes important for getting specific code to work
+
+
+###Mathematical operations for numeric data
+
+#Can be a basic calculator function
+1+1
+1-1
+1*2
+2-1
+2^2
+sqrt(4)
+log(16) #assumes natural log
+log(16,base=2)
+exp(0.5)
+
+#Can also use objects to streamline process
+
+a=2
+b=3
+
+a+b
+a*b
+b^a
+
+#This is more valuable when we use more complex
+#procedures to perform analysis, and can define
+#output as objects and perform subsequent
+#follow up data processing using those objects
+
+#We can also do matrix operations
+
+x1=c(1,2,3)
+x2=c(4,5,6)
+x=rbind(x1,x2)
+x
+
+#For counting, we can do length() for vectors
+length(x1)
+
+#and for matrices we can use dim() and nrow() and ncol()
+#to extract the dimensions
+
+dim(x)
+nrow(x)
+ncol(x)
+
+#We can also do sums, products, and averages across the matrix
+sum(x)
+prod(x)
+mean(x)
+
+#Matrix notation is defined as:
+#matrix[row number,column number]
+
+#Identifying the first column
+x[,1]
+sum(x[,1])
+
+#Identifying the first row
+x[1,]
+sum(x[1,])
+
+#or by specifying the name if it is a data frame
+x_df=data.frame(x)
+colnames(x_df)=c("x1","x2","x3")
+x_df$x1
+sum(x_df$x1)
+
+#The transpose can be performed as t()
+x_t=t(x)
+x
+x_t
+
+#Addition/subtraction can be performed using standard functions
+y=c(1,1,1)
+
+x
+x-y
+
+#Multiplication can be performed using %*%
+#NOTE: c() specifies as a column vector,
+#so y is 3 x 1
+x
+y
+x%*%y
+
+#Verifying results were correct
+1*1+1*2+1*3
+1*4+1*5+1*6
+
+#and the inverse can be taken as solve()
+solve(rbind(c(1,2,3),
+            c(1,4,9),
+            c(1,8,27)))
+
+#Determinant can be identified using det()
+det(rbind(c(1,2,3),
+          c(1,4,9),
+          c(1,8,27)))
+
+###Let's look at some real data now
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Data.txt",sep="\t",header=T)
+
+#We can preview the data with head()
+head(data)
+
+#Baseline heartrate at the first iteration of the stress protocol
+mean(data$HRBASE1)
+
+#Baseline heartrate at the second iteraation of the stress protocol
+mean(data$HRBASE2)
+
+#The CONDITION variable indicates which group they were randomized to:
+#1 if gratitude, 2 if control
+grat=subset(data,data$CONDITION==1)
+ctrl=subset(data,data$CONDITION==2)
+
+#Checking to make sure things read in properly
+#There should be 21 participants per group for a total of 42
+nrow(data)
+nrow(grat)
+nrow(ctrl)
+
+#Heart rate at the recovery stage of the protocol during the first iteration of the protocol
+mean(grat$HRRECOV1)
+mean(ctrl$HRRECOV1)
+
+mean(grat$HRRECOV1)-mean(ctrl$HRRECOV1)
+
+#Heart rate at the recovery stage of the protocol during the second iteration of the protocol
+mean(grat$HRRECOV2)
+mean(ctrl$HRRECOV2)
+
+mean(grat$HRRECOV2)-mean(ctrl$HRRECOV2)
+
+#Creating histograms
+hist(grat$HRRECOV2,
+     main="Histogram of Recovery Heart Rate at First Trial",
+     xlab="Recovery Heart Rate at First Trial, Gratitude Group")
+
+hist(ctrl$HRRECOV2,
+     main="Histogram of Recovery Heart Rate at First Trial",
+     xlab="Recovery Heart Rate at First Trial, Control Group")
+
+#Creating bar plots
+means_grat=c(colMeans(grat[,6:15]))
+means_ctrl=c(colMeans(ctrl[,6:15]))
+
+#Long names wouldn't fit on the plot,
+#so shortening to five stages of a protocol on two occasions
+names(means_grat)=c("1.1","1.2","1.3","1.4","1.5",
+                    "2.1","2.2","2.3","2.4","2.5")
+names(means_ctrl)=c("1.1","1.2","1.3","1.4","1.5",
+                    "2.1","2.2","2.3","2.4","2.5")
+
+barplot(means_grat,
+        main="Heart Rates for Gratitude Group",
+        xlab="Measurement")
+
+barplot(means_ctrl,
+        main="Heart Rates for Control Group",
+        xlab="Measurement")
+
+#Creating line charts
+x=c(1:5)
+plot(x=x,y=means_ctrl[1:5],type="l",ylim=c(70,90),
+     main="Heart Rates by Experimental Condition, Pre",
+     xlab="Stage of Protocol",
+     ylab="Mean Heart Rate")
+
+lines(x=x,y=means_grat[1:5],col="red")
+
+legend("topleft",
+       legend=c("Control","Gratitude"),
+       col=c("black","red"),
+       lty=c(1,1))
+
+plot(x=x,y=means_ctrl[6:10],type="l",ylim=c(70,90),
+     main="Heart Rates by Experimental Condition, Post",
+     xlab="Stage of Protocol",
+     ylab="Mean Heart Rate")
+
+lines(x=x,y=means_grat[6:10],col="red")
+
+legend("topleft",
+       legend=c("Control","Gratitude"),
+       col=c("black","red"),
+       lty=c(1,1))
+
+
+#Creating box plots
+data$group=ifelse(data$CONDITION==1,"Gratitude","Control")
+
+#Factors are categorical data, can be plotted as boxplots easily!
+data$group=as.factor(data$group)
+
+#Focusing on recovery heart rate, defining this has change in heart rate
+#from the first iteration of the protocol
+data$Delta_HR=data$HRRECOV2-data$HRRECOV1
+
+plot(data$Delta_HR~data$group,
+     main="Change in Revovery Heart Rate Pre to Post Intervention by Group",
+     xlab="Intervention Group",
+     ylab="Change in Recovery Heart Rate")
+
+#####Topic 2: Research Design Basics#####
+
+#Reading data in and library statement
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Data.txt",sep="\t",header=T)
+library(psych)
+
+## Example of an experimental design
+
+#Comparing app usage rates
+describe(data$DAYSOFUSINGAPP)
+
+#Extract frequencies
+table(data$DAYSOFUSINGAPP)
+
+#Barplots of app usage
+barplot(table(data$DAYSOFUSINGAPP),
+        main="App Usage",
+        xlab="Days Using App (14 Max)",
+        ylab="Frequency")
+
+
+#Making a chart of app usage by group
+data$group=ifelse(data$CONDITION==1,"Gratitude","Control")
+data$group=as.factor(data$group)
+plot(data$DAYSOFUSINGAPP~data$group,
+     main="App Usage By Group",
+     xlab="Experimental Group",
+     ylab="Days Using App")
+
+#Comparinng age by experimental condition
+describeBy(data$AGE,data$group)
+
+#Histograms of ages by group
+hist(subset(data,data$CONDITION==1)$AGE,
+     main="Histogram of Ages By Group",
+     xlab="Age",breaks=15,
+     ylim=c(0,11))
+
+hist(subset(data,data$CONDITION==2)$AGE,
+     add=T,col="red",breaks=5)
+
+#Descriptive statistics on cortisol rates
+describe(cbind(data$CortBase1,data$CortStress1,
+               data$CortBase2,data$CortStress2))
+
+#Histograms of cortisol rates
+plot(density(data$CortBase1),
+     main="Histogram of Cortisol",
+     xlab="Cortisol",
+     xlim=c(0,2),
+     col="black",
+     lty=1)
+lines(density(data$CortStress1),
+      col="red",lty=1)
+lines(density(data$CortBase2),
+      col="black",lty=2)
+lines(density(data$CortStress2),
+      col="red",lty=2)
+legend("topright",
+       legend=c("Baseline 1",
+                "Stress 1",
+                "Baseline 2",
+                "Stress 2"),
+       col=c("black","red","black","red"),
+       lty=c(1,1,2,2))
+
+#Box plots of cortisol
+plot(data$CortBase1~data$group,
+     log="y",
+     main="Baseline Cortisol by Group",
+     xlab="Experimental Group",
+     ylab="Baseline Cortisol, First Protocol")
+
+plot(data$CortStress1~data$group,
+     log="y",
+     main="Stress Cortisol by Group",
+     xlab="Experimental Group",
+     ylab="Stress Cortisol, First Protocol")
+
+plot(data$CortBase2~data$group,
+     log="y",
+     main="Baseline Cortisol by Group",
+     xlab="Experimental Group",
+     ylab="Baseline Cortisol, Second Protocol")
+
+plot(data$CortStress2~data$group,
+     log="y",
+     main="Stress Cortisol by Group",
+     xlab="Experimental Group",
+     ylab="Stress Cortisol, Second Protocol")
+
+#Converting cortisol into percentage change
+data$Cort_Delt2=data$CortStress2/data$CortBase2
+
+#Comparison of change in cortisol by experimental condition
+plot(data$Cort_Delt2~data$group,
+     log="y",
+     main="Change in Cortisol by Group",
+     xlab="Experimental Group",
+     ylab="Change in Cortisol from Second Baseline")
+
+#Descriptive statistics by group
+describeBy(data$Cort_Delt2,group=data$group)
+
+## Example of an observational design
+
+#Comparing ages by languages spoken
+data$Language=ifelse(data$Nationality_Language=="International_Non_Eng","Barrier","No Barrier")
+describeBy(data$AGE,group=data$Language)
+
+#Histogram of ages by language group
+plot(density(subset(data,data$Language=="Barrier")$AGE),
+     xlim=c(17,35),
+     main="Ages by Language Barrier",
+     xlab="Age",
+     col="red")
+lines(density(subset(data,data$Language=="No Barrier")$AGE),
+      col="black")
+legend("topright",
+       legend=c("Barrier","No Barrier"),
+       col=c("red","black"),
+       lty=c(1,1,1))
+
+#Comparing based on gender
+data$Gender_Label=ifelse(data$GENDER==1,"Male","Female")
+table(data$Language,data$Gender_Label)
+
+#Removing the one older participant who may not represent most other participants
+data2=subset(data,data$AGE<26)
+
+#Descriptive statistics
+describe(cbind(data2$CortBase1,data2$CortStress1))
+
+#Histogram of cortisol
+hist(data2$CortStress1,
+     main="Histogram of Cortisol",
+     xlab="Cortisol",
+     xlim=c(0,2),
+     breaks=15,col="red")
+hist(data2$CortBase1,
+     breaks=15,add=T)
+
+#Box plots of cortisol by language group
+data2$Language=as.factor(data2$Language)
+
+plot(data2$CortBase1~data2$Language,
+     log="y",
+     main="Baseline Cortisol by Language Barrier",
+     xlab="Language Barrier",
+     ylab="Baseline Cortisol")
+plot(data2$CortStress1~data2$Language,
+     log="y",
+     main="Stress Cortisol by Language Barrier",
+     xlab="Language Barrier",
+     ylab="Stress Cortisol")
+
+#As before, converting to percentage change in cortisol
+data2$Cort_Delt=data2$CortStress1/data2$CortBase1
+
+#Box plots
+plot(data2$Cort_Delt~data2$Language,
+     log="y",
+     main="Change in Cortisol by Language Barrier",
+     xlab="Language Barrier",
+     ylab="Change in Cortisol")
+
+#Descriptive statistics
+describeBy(data2$Cort_Delt,group=data2$Language)
+
+#####Topic 3: Introduction to Probability Theory#####
+
+#Library statement and calling the code Ray wrote to post process results
+library(MASS)
+source("https://raw.githubusercontent.com/JoshuaRayTanzer/Functions/main/Functions.R")
+
+## Binomial distribution
+
+#probability of heads
+dbinom(x=0,size=1,prob=0.5)
+#probability of tails
+dbinom(x=1,size=1,prob=0.5)
+
+#simulation flipping a coin ten times
+rbinom(n=10,size=1,prob=0.5)
+#probability of exactly three heads out of ten flips
+dbinom(x=3,size=10,prob=0.5)
+
+#how many heads would represent the 30th percentile
+qbinom(p=0.3,size=10,prob=0.5)
+
+#flip ten coins and count the heads
+rbinom(n=1,size=10,prob=0.5)
+
+#flip ten coins and count the heads ten times
+rbinom(n=10,size=10,prob=0.5)
+#I know that's silly business, but worth keeping straight
+#the difference between n (number of iterations)
+#and size (number of flips per iteration)
+
+#Creating a chart of the probability density
+x=seq(0,1,length=100)
+x
+
+plot(x=x,y=dbinom(x,size=1,prob=0.5),type="l",
+     main="Any Binomial Probability",
+     xlab="Value of X",
+     ylab="Probability")
+
+#Creating a chart of ANY binomial probability density
+prob=0.25
+
+plot(x=x,y=dbinom(x,size=1,prob=prob),type="l",
+     main="Any Binomial Probability",
+     xlab="Value of X",
+     ylab="Probability")
+
+## Poisson Distribution
+dpois(x=3,lambda=2) #probability of exactly three events occurring in the period of time
+qpois(p=0.95,lambda=2) #how many events would represent the 95th percentile in the period of time
+rpois(n=10,lambda=2) #Observe 10 Poisson counts
+
+#to fact check that lambda equal to the mean statement, we can verify this!
+mean(rpois(n=20,lambda=2))
+
+#Creating a plot of the probability density
+rate=3
+
+#inferring how far out to go based on a chart to represent 99% of the distribution
+upper_limit=qpois(0.99,rate)
+
+x=0:upper_limit
+plot(x=x,y=dpois(x,lambda=rate),type="l",
+     main="Any Poisson Probability",
+     xlab="Value of X",
+     ylab="Probability")
+upper_limit=qnbinom(0.99,size=3,prob=0.5)
+
+## Negative binomial distribution
+
+#A highly skewed count distribution, more skewed than Poisson!
+#The details are beyond this program,
+#but it's worth being familiar with what it looks like!
+#See chart below!
+
+x=0:upper_limit
+plot(x=x,y=dnbinom(x,size=3,prob=0.5),type="l",
+     main="Negative Binomial Probability",
+     xlab="Value of X",
+     ylab="Probability")
+
+## Exponential distribution
+
+dexp(x=0.3,rate=1/2) #density of an exact score of 0.3
+qexp(p=0.667,rate=1/2) #what level would represent the two thirds percentile
+rexp(n=10,rate=1/2) #Observe 10 exponential events
+
+#again to fact check the relationship between rate and average, should be 2
+mean(rexp(n=20,rate=1/2))
+
+#Plotting the probability density
+rate=1/2
+upper_limit=qexp(0.99,rate)
+x=seq(0,upper_limit,length=100)
+plot(x=x,y=dexp(x,rate=rate),type="l",
+     main="Any Exponential Probability",
+     xlab="Value of X",
+     ylab="Density")
+
+#Note that, big picture, the chart looks the same
+#even if we have a vastly different rate!
+#This is one of the hallmarks of an exponential distribution
+
+rate=1/100
+upper_limit=qexp(0.99,rate)
+
+x=seq(0,upper_limit,length=100)
+plot(x=x,y=dexp(x,rate=rate),type="l",
+     main="Any Exponential Probability",
+     xlab="Value of X",
+     ylab="Density")
+
+## Beta Distribution
+
+dbeta(x=0.3,shape1=3,shape2=5) #density of an exact score of 0.3
+#note how densities can be greater than 1, and beta goes to infinity near 0 and 1!
+qbeta(p=0.5,shape1=3,shape2=5) #what level would represent the median
+rbeta(n=10,shape1=3,shape2=5) #Observe 10 beta percentages
+
+#Plotting the probability density
+shape1=2
+shape2=4
+
+x=seq(0.005,0.995,length=100)
+#As hinted at before, 0 and 1 are asymptotes, so need to restrict our range a bit!
+
+plot(x=x,y=dbeta(x,shape1=shape1,shape2=shape2),type="l",
+     main="Any Beta Probability",
+     xlab="Value of X",
+     ylab="Density")
+
+## Normal distribution
+
+dnorm(x=-1,mean=0,sd=1) #density of an exact score of -1
+qnorm(p=0.25,mean=0,sd=1) #what score would represent the 25th percentile
+rnorm(n=10,mean=0,sd=1) #Observe 10 standard normals
+mean=100
+sd=15
+
+#Plotting the probability density
+x=seq(mean-3*sd,mean+3*sd,length=100)
+
+plot(x=x,y=dnorm(x,mean=mean,sd=sd),type="l",
+     main="Any Normal Probability",
+     xlab="Value of X",
+     ylab="Density")
+
+## Properties of expectations and variances
+
+#Starting with some basics of a normal random variable
+x=rnorm(5000,mean=0,sd=1)
+mean(x)
+var(x)
+#E(X) = 0
+#V(X) = 1^2 = 1
+
+x=rnorm(5000,mean=10,sd=5)
+#E(X) = 10
+#V(X) = 5^2 = 25
+mean(x)
+var(x)
+
+#Implications of adding and multiplying by a constant
+x=rnorm(5000,10,sqrt(9))
+
+#E(aX+b) = a E(X) + b
+
+#E(X+3) = E(X)+3 = 10+3 = 13
+mean(x+3)
+
+#E(3X) = 3E(X) = 3*10 = 30
+mean(3*x)
+
+#E(2X+5) = 2E(X)+5 = 2*10+5 = 25
+mean(2*x+5)
+
+#V(aX+b) = a^2 V(X)
+
+#V(X+3) = V(X) = 3^2 = 9
+var(x+3)
+
+#V(3x) = 3^2*V(X) = 3^2 * 3^2 = 9*9 = 81
+var(3*x)
+
+#V(2x+5) = 2^2*V(X) = 2^2 * 3^2 = 4*9 = 36
+var(2*x+5)
+
+#Adding random variables
+#E(X+Y) = E(X) + E(Y)
+x=rnorm(5000,30,sqrt(5))
+y=rpois(5000,lambda=5)
+
+#E(X+Y) = E(X) + E(Y) = 30 + 5 = 35
+
+mean(x+y)
+
+#V(X+Y) = V(X) + V(Y) + 2*Cov(X,Y)
+#V(X+Y) = V(X) + V(Y) + 2*Cov(X,Y) = 5 + 5 + 2*0 = 10
+var(x+y)
+
+#Adding correlated random variables
+#First we need to simulate correlated data,
+#here from a multivariate normal distribution
+#with correlation of 0.5 and standard deviations of 2 and 3
+#(implying variance of 2^2 = 4 and 3^2 = 9)
+v1=4
+v2=9
+rho=0.5
+
+Sigma=matrix(nrow=2,ncol=2)
+Sigma[1,1]=v1
+Sigma[2,2]=v2
+Sigma[1,2]=sqrt(v1)*sqrt(v2)*rho
+Sigma[2,1]=sqrt(v1)*sqrt(v2)*rho
+Sigma
+
+#Setting the means to be 100 and 20
+mu=c(100,20)
+mu
+
+#Simulating the data
+X=mvrnorm(5000,mu=mu,Sigma=Sigma)
+colMeans(X)
+var(X)
+
+#V(X+Y) = V(X) + V(Y) +2*Cov(X,Y) = 4 + 9 + 2*3 = 19
+Sigma[1,1]+Sigma[2,2]+2*Sigma[1,2]
+
+#This is alternatively accomplished by just adding up
+#all the values in the variance covariance matrix,
+#because the diagonal is repeated twice!
+sum(Sigma)
+
+var(X[,1]+X[,2])
+
+#Multiplying and adding in constants for correlated random variables
+a=3
+b=4
+c=19
+
+#V(aX+bY+c) = a^2*X+b^2*X+2*a*b*Cov(X,Y) = 3^2*4+4^2*9+2*3*4*3
+# = 9*4+16*9+24*3 = 36+144+72 = 252
+a^2*Sigma[1,1]+b^2*Sigma[2,2]+2*a*b*Sigma[1,2]
+var(a*X[,1]+b*X[,2]+c)
+
+## Real data
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Data.txt",sep="\t",header=T)
+
+#Descriptive statistics
+describe(data)
+
+#Focusing on just some variables of interest
+HR=data[,6:15]
+describe(HR)
+
+#Descriptive statistics by group
+describeBy(HR,group=data$CONDITION)
+
+#Correlation
+cor(data$HRBASE1,data$HRBASE2)
+
+#All correlations
+round(cor(HR),2)
+
+#Properties of variances and covariances of the sum of random variables
+#apply just the same for real world data!
+v1=var(data$HRBASE1)
+v2=var(data$HRBASE2)
+cov=cov(data$HRBASE1,data$HRBASE2)
+
+v1+v2+2*cov
+var(data$HRBASE1+data$HRBASE2)
+
+## Matching observed data to known probabilities
+#Simulating some negative binomial data as an example
+X=rnbinom(n=100,size=3,prob=0.5)
+
+#This tool (in the additional functions Ray wrote) can identify
+#candidate distributions and compare observed descriptive statistics
+#to theoretical descriptive statistics to understand whar are possible
+#distributions for this variable
+Plot_Dist(X)
+
+#Using it for real data (probably reasonable to assume about normal)
+Plot_Dist(data$HRBASE1)
+
+#Another example (Seems appropriately exponential or gamma distributed)
+Plot_Dist(data$CortBase1)
+
+#####Topic 4: Hypothesis Testing#####
+
+## Coin flip binomial hypothesis test example
+
+#Setting up a true probability and a tested null assumption
+true_probability=0.6
+null_probability=0.5
+
+#Simulating 100 random coin flips
+flips=rbinom(100,size=1,prob=true_probability) #Cheat coin example
+flips
+
+#Calculating the probability of observing our sample number of heads
+#assuming the null probability of 50% heads is the true probability
+#(AKA, the p value testing if this is a fair coin)
+1-pbinom(q=sum(flips),size=100,prob=null_probability)
+
+#Because this incorporated randomness, I can't provide a sample interpretation.
+#But if you set a random number seed, it will ensure
+#that you get the same numbers every time!
+
+#Simulating consistent random data
+set.seed(999)
+flips=rbinom(100,size=1,prob=true_probability) #Cheat coin example
+sum(flips)
+
+#Calculating the probability
+1-pbinom(q=sum(flips),size=100,prob=null_probability)
+#Since it's very low probability we would observe this sample number of heads
+#assuming the null probability of 50%, then we can conclude
+#the true probability isn't 50%!
+
+#Plotting the distributions
+x=0:100
+y=dbinom(x,size=100,prob=null_probability)
+
+plot(x=x,y=y,type="l",
+     main="Probability of Heads Assuming 50% Probability",
+     xlab="Number of Heads",
+     ylab="Probability")
+
+abline(v=sum(flips),col="blue")
+
+polygon(c(x[x>=sum(flips)], 100, sum(flips)),
+        c(y[x>=sum(flips)], 0, 0),
+        col="blue",border=NA)
+
+legend("topleft",
+       legend="p(observed|null)",
+       col=c("blue"),
+       lty=1)
+
+## Normal IQ hypothesis test example
+
+#Setting up a true mean and standard deviation
+true_mean=115
+true_SD=30
+
+#Assumed mean and standard deviation for IQ scores
+#(Psychology note: this is how IQ scores are designed and calculated!)
+null_mean=100
+null_SD=15
+
+#Generating random data
+set.seed(999)
+scores=rnorm(50,true_mean,true_SD)
+
+#Distribution of scores
+max(scores)
+min(scores)
+mean(scores)
+
+#Testing our observed mean against the null assumption of mean 100
+t=(mean(scores)-100)/(sd(scores)/sqrt(50))
+1-pt(q=t,df=50-1)
+#Seems pretty unlikely we'd see a mean this high
+#assuming the true mean is 100, so we probably shouldn't make
+#that assumption for this group!
+#Conclusion is we reject the null hypothesis that the mean is 100,
+#the mean probably is higher!
+
+#Plotting the distributions
+x=70:130
+y1=dnorm(x,null_mean,null_SD)
+y2=dnorm(x,mean(scores),sd(scores)/sqrt(50))
+
+plot(x=x,y=y2,type="l",
+     main="Distribution of IQ Scores",
+     xlab="Score",
+     ylab="Probability",
+     ylim=c(0,0.1),
+     col="red")
+
+lines(x=x,y=y1)
+
+abline(v=null_mean,col="blue")
+
+polygon(c(70,x[x<=null_mean], null_mean),
+        c(0,y2[x<=null_mean],0),
+        col="blue",border=NA)
+
+legend("topleft",legend=c("Standardized IQ Scores",
+                          "Estimated Sample IQ Mean",
+                          "p(observed mean|null mean)"),
+       col=c("black","red","blue"),
+       lty=c(1,1,1))
+
+## Regression estimates as normal random variables example
+
+#Generating data for older and younger ages
+set.seed(999)
+
+younger_age=rnorm(20,10,2)
+older_age=rnorm(20,14,2)
+
+#Plotting the simulated ages
+x=seq(2,20,length=100)
+y1=dnorm(x,10,2)
+y2=dnorm(x,14,2)
+
+plot(x=x,y=y1,type="l",
+     main="Distribution of Ages",
+     xlab="Age",
+     ylab="Probability")
+
+lines(x=x,y=y2,col="red")
+
+legend("topright",
+       legend=c("Younger","Older"),
+       col=c("black","red"),
+       lty=c(1,1))
+
+#Generating data for infection numbers by age group
+set.seed(999)
+
+younger_infection=rpois(20,2)
+older_infection=rpois(20,5)
+
+#Plotting the simulated infections
+x=0:10
+y1=dpois(x,2)
+y2=dnorm(x,5)
+
+plot(x=x,y=y2,type="l",
+     main="Distribution of Infection Rates",
+     xlab="Infections",
+     ylab="Probability",col="red")
+
+lines(x=x,y=y1)
+
+legend("topright",
+       legend=c("Younger","Older"),
+       col=c("black","red"),
+       lty=c(1,1))
+
+#Combining the simulated data into one dataset
+data=cbind(c(younger_infection,older_infection),  #Infection rates (Y)
+           c(younger_age,older_age))              #Ages (x)
+
+data=data.frame(data)
+
+colnames(data)=c("Infections","Age")
+
+data
+
+#Plotting the infections by age
+plot(data$Infections~data$Age,
+     main="Infection Rate by Age",
+     xlab="Age",
+     ylab="Infections")
+
+#Estimating a regression model for number infections by age
+mod=lm(data$Infections~data$Age)
+#Reviewing results
+summary(mod)
+
+#####Topic 5: Continuous X, Normal Y#####
+
+#Reading the data in and calling the code Ray wrote to post process results
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Data.txt",sep="\t",header=T)
+source("S:/Ray_R_Tools/Programs/All_Programs.R", local = knitr::knit_global())
+
+#Plot of the heartrate measures
+plot(x=data$HRPREP1,y=data$HRPREP2,
+     main="Heart Rate during Speech Prep by Protocol",
+     xlab="First Prep",
+     ylab="Second Prep")
+
+#Centering heart rate at baseline and squaring for quadratic term
+data$Prep1_c=data$HRPREP1-mean(data$HRPREP1)
+data$Prep1_c2=data$Prep1_c^2
+
+#Estimating the models
+mod1=lm(HRPREP2~Prep1_c,data=data)
+mod2=lm(HRPREP2~Prep1_c+Prep1_c2,data=data)
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2),
+             Plots=c("Histogram","QQ"))
+
+#Reviewing results
+summary(mod1)
+summary(mod2)
+
+#Writing linear combination matrix (L matrix) for post processing results interpretation
+L_low=c(1,-10)
+L_high=c(1,10)
+L=cbind(L_low,L_high)
+
+#Extracting implied model averages from L matrices
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=c("Cool Cucumbers","Worriers"),
+            diff=c(1,2),
+            plot=c(1,2),
+            ylab="Preparation Heart Rate",
+            main="Preparation Heart Rate between Worriers and Cool Cucumbers")
+
+#Evaluating estimate reliability
+h=df_L(mod=mod1,
+       L=L,
+       Est_Names=c("Cool Cucumbers","Worriers"))
+
+#Doing one more example of the quadratic model, for demonstration!
+#Model already estimated, so just need to set up the L matrix
+L=cbind(c(1,-10,(-10)^2), #Cool cucumbers
+        c(1,10,(10)^2))   #Worriers
+
+#Estimate reliability
+h=df_L(mod=mod2,
+       L=L,
+       Est_Names=c("Cool Cucumbers","Worriers"))
+
+#Getting model implied estimates and charts
+hat=Est_Mod(mod=mod2,
+            L=L,
+            Est_Names=c("Cool Cucumbers","Worriers"),
+            diff=c(1,2),
+            plot=c(1,2),
+            ylab="Preparation Heart Rate",
+            main="Preparation Heart Rate between Worriers and Cool Cucumbers")
+
+#####Topic 6: Categorical X, Normal Y#####
+
+#Reading the data in and calling the code Ray wrote to post process results
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Data.txt",sep="\t",header=T)
+source("S:/Ray_R_Tools/Programs/All_Programs.R", local = knitr::knit_global())
+
+## Two group comparison
+
+#Converting gratitude and control conditions to a labeled factor
+#where the reference group is the control group
+data$group=ifelse(data$CONDITION==1,"Gratitude","Control")
+data$group=as.factor(data$group)
+data=within(data, group<-relevel(data$group,ref="Control"))
+
+#Creating a variable for change in heart rate from baseline to recovery
+data$delta_HR=data$HRRECOV2-data$HRBASE2
+
+#Making charts
+plot(data$delta_HR~data$group,
+     main="Recovery Heart Rate by Experimental Condition",
+     xlab="Experimental Condition",
+     ylab="Change in Recovery Heart Rate from Baseline")
+
+#Estimating the model
+mod=lm(delta_HR~group,data=data)
+
+#Evaluating residuals and model fit
+inspect_mods(mod=mod,
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod)
+
+#Writing L matrix to estimate averages for each group
+#Control (intercept only, because it is the reference group)
+L_ctrl=c(1,0)
+#Gratitude (intercept plus difference statistic)
+L_grat=c(1,1)
+
+#Putting them in one matrix
+L=cbind(L_ctrl,
+        L_grat)
+
+#Evaluating estimate reliability
+h=df_L(mod=mod,
+       L=L,
+       Est_Names=c("Control condition","Gratitude condition"))
+
+#Extracting model implied averages
+hat=Est_Mod(mod=mod,
+            L=L,
+            Est_Names=c("Control condition","Gratitude condition"),
+            diff=c(1,2),
+            plot=c(1,2),
+            ylab="Change in Recovery Heart Rate from Baseline",
+            main="Change in Heart Rate by Experimental Condition")
+
+## Three group comparison
+
+#Converting experimental condition and app usage into a factor
+data$Exposure=ifelse(data$group=="Control","Control",
+                     ifelse(data$DAYSOFUSINGAPP<14,"Partial","Full"))
+data$Exposure=as.factor(data$Exposure)
+data=within(data, Exposure<-relevel(data$Exposure,ref="Control"))
+
+#Viewing sampling of each nationality-language group
+table(data$Exposure)
+
+#Plotting averages by group
+plot(data$delta_HR~data$Exposure,
+     main="Recovery Heart Rate by Gratitude Exposure",
+     xlab="Group",
+     ylab="Recovery Heart Rate from Baseline")
+
+#Estimating the model
+mod=lm(delta_HR~Exposure,data=data)
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=mod,
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod)
+
+#Writing an L matrix to compare any two groups and get implied averages
+L=cbind(c(1,0,0), #Control Group, intercept only because reference
+        c(1,1,0), #Full completion of gratitude, intercept plus difference coefficient
+        c(1,0,1)) #Partial completion of gratitude, intercept plus difference coefficient
+
+#Estimate reliability
+h=df_L(mod=mod,
+       L=L,
+       Est_Names=c("Control",
+                   "Full",
+                   "Partial"))
+
+#Extracting model implied averages and difference statistics
+hat=Est_Mod(mod=mod,
+            L=L,
+            Est_Names=c("Control",
+                        "Full",
+                        "Partial"),
+            diff=c(2,3),
+            plot=c(1,2,3),
+            ylab="Change in Recovery Heart Rate from Baseline",
+            main="Change in Heart Rate by Experimental Condition")
+
+#####Topic 7: Multiple Regression Analysis#####
+
+#Reading the data in and calling the code Ray wrote to post process results
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Data.txt",sep="\t",header=T)
+source("https://raw.githubusercontent.com/JoshuaRayTanzer/Functions/main/Functions.R")
+
+## Categorical-categorical example
+
+#Making clearer labels
+data$group=ifelse(data$CONDITION==1,"Gratitude","Control")
+data$Gender_Label=ifelse(data$GENDER==1,"Male","Female")
+
+#Reference level specification
+data$group=as.factor(data$group)
+data=within(data, group<-relevel(data$group,ref="Gratitude"))
+
+data$Gender_Label=as.factor(data$Gender_Label)
+data=within(data, Gender_Label<-relevel(data$Gender_Label,ref="Female"))
+
+#Comparing frequencies
+table(data$group,data$Gender_Label)
+
+#Creating change in heart rate scores
+data$delta_HR=data$HRRECOV2-data$HRBASE2
+plot(data$delta_HR~data$group*data$Gender_Label,
+     main="Recovery Heart Rate by Geneder and Experimental Condition",
+     xlab="Gender Group or Experimental Condition",
+     ylab="Change in Recovery Heart Rate")
+
+#Estimating a model with both groups and their interaction
+mod=lm(delta_HR~group*Gender_Label,data=data)
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=mod,
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod)
+
+#A function to simplify writing the L matrix!
+L_Specify(mod=mod,
+          Est_Num=4,
+          type="Mean")
+
+#Copying and pasting the output backup code
+L=cbind(c(1, 0, 0, 0),
+        c(1, 1, 0, 0),
+        c(1, 0, 1, 0),
+        c(1, 1, 1, 1))
+
+Est_Names=c('Female, Grat', 'Female, Ctrl', 'Male, Grat', 'Male, Ctrl')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied averages and comparisons
+hat=Est_Mod(mod=mod,
+            L=L,
+            Est_Names=Est_Names,
+            plot=c(1,2,3,4),
+            ylab="Change in Recovery Heart Rate",
+            main="Change in Heart Rate by Experimental Condition and Gender Identity")
+
+hat=Est_Mod(mod=mod,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(3,4),
+            Print_L=F)
+
+## Categorical-continuous example
+data$group=ifelse(data$CONDITION==1,"Gratitude","Control")
+
+#Specifying the reference levels
+data$group=as.factor(data$group)
+data=within(data, group<-relevel(data$group,ref="Gratitude"))
+
+#Centering baseline heart rate at sample average, and allowing for a curvilinear trend
+data$Base2_c=data$HRBASE2-mean(data$HRBASE2)
+data$Base2_c2=data$Base2_c^2
+plot(data$HRRECOV2~data$group*data$HRBASE2,
+     main="Recovery Heart Rate by Baseline Heart Rate and Experimental Condition",
+     xlab="Experimental Condition or Baseline Heart Rate",
+     ylab="Recovery Heart Rate")
+
+#Model estimation
+#Linear
+mod1=lm(HRRECOV2~group*Base2_c,data=data)
+#Quadratic
+mod2=lm(HRRECOV2~group*Base2_c+group*Base2_c2,data=data)
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2),
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod1)
+summary(mod2)
+
+#Writing the L matrix
+L_Specify(mod1,
+          Est_Num=4,
+          type="Mean")
+
+#Copying and pasting the backup code
+L=cbind(c(1, 0, 10, 0),
+        c(1, 1, 10, 10),
+        c(1, 0, -10, 0),
+        c(1, 1, -10, -10))
+
+Est_Names=c('Worrier, Grat', 'Worrier, Ctrl', 'Cool Cucumber, Grat', 'Cool Cucumber, Ctrl')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod1,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied averages and group comparisons
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            plot=c(1,2,3,4),
+            ylab="Recovery Heart Rate",
+            main="Recovery Heart Rate by Baseline Heart Rate and Experimental Condition")
+
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(1,2),
+            Print_L=F)
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(3,4),
+            Print_L=F)
+
+## Continuous-continuous example
+
+#First X variable: heart rate at baseline, centered at the sample average
+data$Base1_c=data$HRBASE1-mean(data$HRBASE1)
+data$Base1_c2=data$Base1_c^2
+
+#Second X variable: change in heart rate from baseline
+data$delta_math=data$HRMATH1-data$HRBASE1
+data$delta_math2=data$delta_math^2
+
+#Making charts
+plot(data$HRRECOV1~data$HRBASE1*data$delta_math,
+     main="Recovery Heart Rate by Base Heart Rate and Change in Math Heart Rate",
+     xlab="Baseline Heart Rate or Change in Math Heart Rate",
+     ylab="Recovery Heart Rate")
+
+#Four models (for each of linear and quadratic trends for each variable)
+mod1=lm(HRRECOV1~Base1_c*delta_math,data=data)
+mod2=lm(HRRECOV1~Base1_c*delta_math+Base1_c2*delta_math,data=data)
+mod3=lm(HRRECOV1~Base1_c*delta_math+Base1_c*delta_math2,data=data)
+mod4=lm(HRRECOV1~Base1_c*delta_math+Base1_c2*delta_math+
+          Base1_c2*delta_math2,data=data)
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2,mod3,mod4),
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod1)
+summary(mod3)
+
+#Writing the L matrix
+L_Specify(mod=mod1,
+          Est_Num=4,
+          type="Mean")
+
+#Backup code
+L=cbind(c(1, -10, 0, 0),
+        c(1, -10, 10, -100),
+        c(1, 10, 0, 0),
+        c(1, 10, 10, 100))
+
+Est_Names=c('Low HR, No Stress', 'Low HR, Stress', 'High HR, No Stress', 'High HR, Stress')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod1,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied averages and comparisons
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            plot=c(1,2,3,4),
+            ylab="Recovery Heart Rate",
+            main="Recovery Heart Rate by Base Heart Rate and Math Heart Rate")
+
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(1,4),
+            Print_L=F)
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(2,4),
+            Print_L=F)
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(3,4),
+            Print_L=F)
+
+#####Topic 8: The Generalized Linear Model#####
+
+#Reading the data in and calling the code Ray wrote to post process results
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Data.txt",sep="\t",header=T)
+source("https://raw.githubusercontent.com/JoshuaRayTanzer/Functions/main/Functions.R")
+
+## Logistic regression
+
+#Converting increase in heart rate into a binary
+#NOTE: only doing this for example purposes,
+#I generally don't recommend converting a continuum into a category! 
+
+#Y event, if increase 1; else 0
+data$increase_recov=ifelse(data$HRRECOV2>data$HRBASE2,1,0)
+
+#Gratitude and control groups
+data$group=ifelse(data$CONDITION==1,"Gratitude","Control")
+
+data$group=as.factor(data$group)
+data=within(data, group<-relevel(data$group,ref="Gratitude"))
+
+#Change in heart rate between baseline and stress condition, plus a quadratic option
+data$delta_math=data$HRMATH2-data$HRBASE2
+data$delta_math2=data$delta_math^2
+
+#Just for the plot, we can get estimated average percentages by group
+grat_increase=mean(subset(data,data$group=="Gratitude")$increase_recov)
+ctrl_increase=mean(subset(data,data$group=="Control")$increase_recov)
+
+#Bar plot of averages
+barplot(c(grat_increase,ctrl_increase),
+        names.arg=c("Gratitude","Control"),
+        ylim=c(0,1),
+        main="Recovery Heart Rate by Experimental Condition",
+        xlab="Experimental Condition",
+        ylab="Recovery Heart Rate (% Increased)")
+
+#Plot of increases by change in math scores
+plot(data$increase_recov~data$delta_math,
+     main="Recovery Heart Rate by Math Heart Rate",
+     xlab="Math Heart Rate Increase",
+     ylab="Recovery Heart Rate (% Increased)")
+
+#Model estimation
+mod1=glm(increase_recov~group*delta_math,family="binomial"(link="logit"),data=data)
+mod2=glm(increase_recov~group*delta_math+group*delta_math2,family="binomial"(link="logit"),data=data)
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2),
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod1)
+
+#Writing the L matrix
+L_Specify(mod=mod1,
+          Est_Num=4,
+          type="Mean")
+
+#Saving our work
+L=cbind(c(1, 0, 10, 0),
+        c(1, 1, 10, 10),
+        c(1, 0, 0, 0),
+        c(1, 1, 0, 0))
+
+Est_Names=c('1. Grat, Increased HR', '2. Ctrl, Increased HR', '3. Grat, No Change in HR', '4. Ctrl, No Change in HR')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod1,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied percentages and comparisons
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            link="Logit",
+            plot=c(1,2,3,4),
+            ylab="Recovery Heart Rate (% Increased)",
+            main="Recovery Heart Rate by Experimental Condition and Change in Heart Rate During Stress")
+
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            link="Logit",
+            diff=c(1,2),
+            Print_L=F)
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            link="Logit",
+            diff=c(3,4),
+            Print_L=F)
+
+## Log based regression
+
+#We could consider a linear and quadratic trend for stress cortisol in first protocol
+#(No need to transform the outcome, that will be the link function)
+data$Cort_Stress_c=data$CortStress1-mean(data$CortStress1)
+data$Cort_Stress_c2=data$Cort_Stress_c^2
+
+#Making plots
+plot(data$CortStress2~data$CortStress1*data$group,
+     main="Stress Cortisol by Experimental Condition",
+     xlab="Baseline Cortisol or Experimental Condition",
+     ylab="Stress Cortisol",
+     log="xy")
+
+#Considering possible distributions for the outcome 
+Plot_Dist(data$CortStress2)
+
+#Model estimation
+#Gamma
+mod1=glm(CortStress2~group*Cort_Stress_c,family="Gamma"(link="log"),data=data)#Linear
+mod2=glm(CortStress2~group*Cort_Stress_c+group*Cort_Stress_c2,
+         family="Gamma"(link="log"),data=data)#Quadratic
+#Log normal
+mod3=glm(CortStress2~group*Cort_Stress_c,family="gaussian"(link="log"),data=data)#Linear
+mod4=glm(CortStress2~group*Cort_Stress_c+group*Cort_Stress_c2,
+         family="gaussian"(link="log"),data=data)#Quadratic
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2,mod3,mod4),
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod2)
+
+#Writing the L matrix
+L_Specify(mod=mod2,
+          Est_Num=4,
+          type="Mean")
+
+#Backing up our work
+L=cbind(c(1, 0, -0.3, 0.09, 0, 0),
+        c(1, 1, -0.3, 0.09, -0.3, 0.09),
+        c(1, 0, 0.3, 0.09, 0, 0),
+        c(1, 1, 0.3, 0.09, 0.3, 0.09))
+
+Est_Names=c('1. Low Cort, Grat', '2. Low Cort, Ctrl', '3. High Cort, Grat', '4. High Cort, Ctrl')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod2,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied rates and comparisons
+hat=Est_Mod(mod=mod2,
+            L=L,
+            Est_Names=Est_Names,
+            link="Log",
+            plot=c(1,2,3,4),
+            ylab="Stress Cortisol",
+            main="Stress Cortisol by Experimental Condition and First Protocol Cortisol")
+
+hat=Est_Mod(mod=mod2,
+            L=L,
+            Est_Names=Est_Names,
+            link="Log",
+            diff=c(1,2),
+            Print_L=F)
+hat=Est_Mod(mod=mod2,
+            L=L,
+            Est_Names=Est_Names,
+            link="Log",
+            diff=c(3,4),
+            Print_L=F)
+
+#Sensitivity analysis
+mod2_Sensitivity=glm(CortStress2~group*Cort_Stress_c+group*Cort_Stress_c2,
+                     family="Gamma"(link="log"),data=data[-c(5),]) #Dropping observation 5
+
+hat=Est_Mod(mod=mod2_Sensitivity,
+            L=L,
+            Est_Names=Est_Names,
+            link="Log",
+            plot=c(1,2,3,4),
+            ylab="Stress Cortisol",
+            main="Stress Cortisol by Experimental Condition and First Protocol Cortisol")
+
+hat=Est_Mod(mod=mod2_Sensitivity,
+            L=L,
+            Est_Names=Est_Names,
+            link="Log",
+            diff=c(1,2),
+            Print_L=F)
+hat=Est_Mod(mod=mod2_Sensitivity,
+            L=L,
+            Est_Names=Est_Names,
+            link="Log",
+            diff=c(3,4),
+            Print_L=F)
+
+
+## Beta binomial example
+
+#Converting raw scores into percentages, centering, and squaring
+
+#First protocol
+data$Stress_pct_BL=data$PSS1/56-mean(data$PSS1/56)
+#First protocol, quadratic change
+data$Stress_pct_BL2=data$Stress_pct_BL^2
+#Second protocol
+data$Stress_pct_FU=data$PSS2/56
+
+#Viewing the data and the beta binomial expectation
+Plot_Dist(data$Stress_pct_FU)
+
+#Making charts
+plot(data$Stress_pct_FU~data$group*data$Stress_pct_BL,
+     main="Reported Stress by Experimental Condition and Baseline Stress Score",
+     xlab="Experimental Condition or Baseline Stress Score",
+     ylab="Reported Stress")
+
+#Model estimation
+mod1=glm(Stress_pct_FU~group*Stress_pct_BL,family="binomial"(link="logit"),data=data)
+mod2=glm(Stress_pct_FU~group*Stress_pct_BL+group*Stress_pct_BL2,
+         family="binomial"(link="logit"),data=data)
+#Don't worry about the warnings, they're just telling you that
+#the outcome isn't 0 and 1 as is assumed in a binomial distribution,
+#but we already knew that!
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2),
+             Plots=c("Histogram","QQ"))
+
+#Writing the L matrix
+L_Specify(mod=mod2,
+          Est_Num=4,
+          type="Mean")
+
+#Backup code
+L=cbind(c(1, 0, -0.1, 0.01, 0, 0),
+        c(1, 1, -0.1, 0.01, -0.1, 0.01),
+        c(1, 0, 0.1, 0.01, 0, 0),
+        c(1, 1, 0.1, 0.01, 0.1, 0.01))
+
+Est_Names=c('1. Low Stress, Grat', '2. Low Stress, Ctrl', '3. High Stress, Grat', '4. High Stress, Ctrl')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod2,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied averages and comparisons
+hat=Est_Mod(mod=mod2,
+            L=L,
+            Est_Names=Est_Names,
+            link="logit",
+            plot=c(1,2,3,4),
+            ylab="Reported Stress",
+            main="Reported Stress by Experimental Condition and Baseline Stress Score")
+
+hat=Est_Mod(mod=mod2,
+            L=L,
+            Est_Names=Est_Names,
+            link="logit",
+            diff=c(1,2),
+            Print_L=F)
+hat=Est_Mod(mod=mod2,
+            L=L,
+            Est_Names=Est_Names,
+            link="logit",
+            diff=c(3,4),
+            Print_L=F)
+
+#####Topic 9: Random Effects for Repeated Measures#####
+
+#Reading the data in, library statement,
+#and calling the code Ray wrote to post process results
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Data.txt",sep="\t",header=T)
+library(glmmTMB)
+source("https://raw.githubusercontent.com/JoshuaRayTanzer/Functions/main/Functions.R")
+
+#Making a chart of heart rate at each stage of protocol
+#Average levels
+HR=c(mean(data$HRBASE1),
+     mean(data$HRPREP1),
+     mean(data$HRTALK1),
+     mean(data$HRMATH1),
+     mean(data$HRRECOV1))
+
+#Overall chart
+plot(y=HR,x=0:4,type="l",
+     main="Changes in Heart Rate over Protocol",
+     xlab="Stage of Protocol",
+     ylab="Heart Rate",
+     ylim=c(50,120))
+
+#Add a line for each individual in the dataset
+for(i in 1:nrow(data)){
+  lines(y=c(data$HRBASE1[i],
+            data$HRPREP1[i],
+            data$HRTALK1[i],
+            data$HRMATH1[i],
+            data$HRRECOV1[i]),
+        x=0:4,
+        col="grey")
+}
+
+#Adding in the average levels again, this time with a thicker line
+lines(y=HR,x=0:4,lwd=2)
+
+#Converting "wide format" data to "long format"
+y=c(data$HRBASE1,
+    data$HRPREP1,
+    data$HRTALK1,
+    data$HRMATH1,
+    data$HRRECOV1)
+
+long=data.frame(y)
+
+#note that the rep statement means repeat this value,
+#the number repeats specified as nrow(data),
+#or the number or records in the dataset.
+long$protocol=c(rep(0,nrow(data)),
+                rep(1,nrow(data)),
+                rep(2,nrow(data)),
+                rep(3,nrow(data)),
+                rep(4,nrow(data)))
+
+#We can do this as a factor...
+long$protocol=as.factor(long$protocol)
+long=within(long, protocol<-relevel(long$protocol,ref="0"))
+
+#...or leave it as a continuous number!
+long$protocol_cont=c(rep(0,nrow(data)),
+                     rep(1,nrow(data)),
+                     rep(2,nrow(data)),
+                     rep(3,nrow(data)),
+                     rep(4,nrow(data)))
+
+long$protocol_cont2=long$protocol_cont^2
+
+#Using the rep statement again, so repeat the numbers from 1 to
+#however many records are in the dataset, repeat that five times
+long$ID=rep(1:nrow(data),5)
+long$ID=as.factor(long$ID)
+
+#Model estimation
+
+#Unstructured
+mod1=glmmTMB(y~protocol+us(0+protocol|ID),data=long,family=gaussian)
+#Model convergence problem, computer can't find an answer,
+#we may not be able to use this model!
+#This happens sometimes, especially since we used an
+#unstructured covariance matrix, which is pretty complex!
+
+#Autoregressive
+mod2=glmmTMB(y~protocol+ar1(0+protocol|ID),data=long,family=gaussian)
+
+#Compound symmetry
+mod3=glmmTMB(y~protocol+cs(0+protocol|ID),data=long,family=gaussian)
+
+#Linear
+mod4=glmmTMB(y~protocol_cont+us(1+protocol_cont|ID),data=long,family=gaussian)
+
+#Quadratic
+mod5=glmmTMB(y~protocol_cont+protocol_cont2+us(1+protocol_cont+protocol_cont2|ID),data=long,family=gaussian)
+#Getting another model convergence problem, fortunately we have more options,
+#we can simplify this model while keeping a similar conceptual design
+#(diag estimates one variance per random effect,
+#assumes uncorrelated random effects.  Not a preferred assumption,
+#but sometimes you can't get the computer to work otherwise!)
+mod5=glmmTMB(y~protocol_cont+protocol_cont2+diag(1+protocol_cont+protocol_cont2|ID),data=long,family=gaussian)
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2,mod3,mod4,mod5),
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod3)
+
+#Writing the L matrix
+L_Specify(mod=mod3,
+          Est_Num=5,
+          type="Mean")
+
+#Always make sure to back up
+L=cbind(c(1, 0, 0, 0, 0),
+        c(1, 1, 0, 0, 0),
+        c(1, 0, 1, 0, 0),
+        c(1, 0, 0, 1, 0),
+        c(1, 0, 0, 0, 1))
+
+Est_Names=c('Baseline', 'Preparation', 'Speech', 'Math', 'Recovery')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod3,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model impled averages and differences
+hat=Est_Mod(mod=mod3,
+            L=L,
+            Est_Names=Est_Names,
+            plot=c(1,2,3,4,5),
+            plot_type="line",
+            diff=c(1,5),
+            ylab="Heart Rate",
+            main="Heart Rate over Stages of Protocol")
+
+#To show an example of how to format with a quadratic trend
+
+#Writing the L matrix
+L_Specify(mod5,
+          Est_Num=5,
+          type="Mean")
+
+#Saving our work
+L=cbind(c(1, 0, 0),
+        c(1, 1, 1),
+        c(1, 2, 4),
+        c(1, 3, 9),
+        c(1, 4, 16))
+
+Est_Names=c('Baseline', 'Preparation', 'Speech', 'Math', 'Recovery')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod5,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied averages and comparisons
+hat=Est_Mod(mod=mod5,
+            L=L,
+            Est_Names=Est_Names,
+            plot=c(1,2,3,4,5),
+            plot_type="line",
+            diff=c(1,5),
+            ylab="Heart Rate",
+            main="Heart Rate over Stages of Protocol")
+
+## Generalized model example
+
+#Making a chart  of cortisol at each stage
+#Averages at baseline and stress
+delta=c(mean(data$CortBase1),
+        mean(data$CortStress1))
+
+#Overall chart
+plot(y=delta,x=0:1,type="l",
+     main="Changes in Cortisol Pre and Post Stress",
+     xlab="Pre or Post",
+     ylab="Cortisol",
+     log="y",
+     ylim=c(0.01,2))
+#Adding lines for each individual
+for(i in 1:nrow(data)){
+  lines(y=c(data$CortBase1[i],
+            data$CortStress1[i]),
+        x=0:1,
+        col="grey")
+}
+
+#Adding overall average line back on
+lines(y=delta,x=0:1,lwd=2)
+
+#Changing outcome from "wide format" to "long format"
+y=c(data$CortBase1,data$CortStress1)
+long=data.frame(y)
+
+#Creating a variable identifying pre from post stress protocol
+long$prepost=c(rep(0,nrow(data)),
+               rep(1,nrow(data)))
+
+#Keeping track of ages
+long$age_c=rep(data$AGE-mean(data$AGE),2)
+long$age_c2=long$age^2
+
+#Creating IDs
+long$ID=rep(1:nrow(data),2)
+long$ID=as.factor(long$ID)
+
+#Making a chart of cortisol by age
+plot(y=long$y,x=long$age_c,
+     main="Cortisol Levels by Age",
+     xlab="Age",
+     ylab="Cortisol",
+     log="y")
+
+#Examining the distribution of cortisol
+Plot_Dist(long$y)
+
+#Model estimation
+mod1=glmmTMB(y~prepost*age_c+us(0+as.factor(prepost)|ID),
+           data=long,family=Gamma(link = "log"))
+
+mod2=glmmTMB(y~prepost*age_c+prepost*age_c2+us(0+as.factor(prepost)|ID),
+           data=long,family=Gamma(link = "log"))
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2),
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod2)
+
+#Writing the L matrix
+L_Specify(mod2,
+          Est_Num=4,
+          type="Mean")
+
+#Saving work
+L=cbind(c(1, 0, -2, 4, 0, 0),
+        c(1, 1, -2, 4, -2, 4),
+        c(1, 0, 2, 4, 0, 0),
+        c(1, 1, 2, 4, 2, 4))
+
+Est_Names=c('1. Younger, Pre', '2. Younger, Post', '3. Older, Pre', '4. Older, Post')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod2,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied rates and comparisons
+hat=Est_Mod(mod=mod2,
+            L=L,
+            Est_Names=Est_Names,
+            link="log",
+            plot=c(1,2),
+            plot_type="line",
+            diff=c(1,2),
+            ylab="Cortisol",
+            main="Cortisol Levels Pre and Post Stress, Younger Participants")
+
+hat=Est_Mod(mod=mod2,
+            L=L,
+            Est_Names=Est_Names,
+            link="log",
+            plot=c(3,4),
+            plot_type="line",
+            diff=c(3,4),
+            ylab="Cortisol",
+            main="Cortisol Levels Pre and Post Stress, Older Participants")
+
+#Sensitivity analysis
+mod2_Sensitivity=glmmTMB(y~prepost*age_c+prepost*age_c2+us(0+prepost|ID),
+                         data=long[long$ID!=2,],family=Gamma(link = "log"))
+
+inspect_mods(mod=mod2_Sensitivity,
+             Plots=c("Histogram","QQ"))
+
+h=df_L(mod=mod2_Sensitivity,
+       L=L,
+       Est_Names=Est_Names)
+
+hat=Est_Mod(mod=mod2_Sensitivity,
+            L=L,
+            Est_Names=Est_Names,
+            link="log",
+            plot=c(1,2),
+            plot_type="line",
+            diff=c(1,2),
+            ylab="Cortisol",
+            main="Cortisol Levels Pre and Post Stress, Younger Participants")
+
+hat=Est_Mod(mod=mod2_Sensitivity,
+            L=L,
+            Est_Names=Est_Names,
+            link="log",
+            plot=c(3,4),
+            plot_type="line",
+            diff=c(3,4),
+            ylab="Cortisol",
+            main="Cortisol Levels Pre and Post Stress, Older Participants")
+
+## Structure to the data
+
+#Making a chart of heart rate during talk stage by experimental condition
+#Averages at each timepoint and group
+HR_grat=c(mean(subset(data$HRTALK1,data$CONDITION==1)),
+          mean(subset(data$HRTALK2,data$CONDITION==1)))
+HR_ctrl=c(mean(subset(data$HRTALK1,data$CONDITION==2)),
+          mean(subset(data$HRTALK2,data$CONDITION==2)))
+
+#Overall chart
+plot(y=HR_grat,x=1:2,type="l",
+     main="Math Task Heart Rate Between Experimental Groups",
+     xlab="Stage of Protocol",
+     ylab="Heart Rate",
+     ylim=c(50,120))
+
+#Adding individual lines
+#Gratitude data
+for(i in 1:nrow(subset(data,data$CONDITION==1))){
+  lines(y=c(subset(data$HRTALK1,data$CONDITION==1)[i],
+            subset(data$HRTALK2,data$CONDITION==1)[i]),
+        x=1:2,
+        col="pink")
+}
+
+#Control data
+for(i in 1:nrow(subset(data,data$CONDITION==2))){
+  lines(y=c(subset(data$HRTALK1,data$CONDITION==2)[i],
+            subset(data$HRTALK2,data$CONDITION==2)[i]),
+        x=1:2,
+        col="grey")
+}
+
+#Adding average lines back in
+lines(y=HR_grat,x=1:2,lwd=2,col="red")
+lines(y=HR_ctrl,x=1:2,lwd=2,col="black")
+
+#Reformatting groups into factors
+data$group=ifelse(data$CONDITION==1,"Gratitude","Control")
+data$group=as.factor(data$group)
+data=within(data, group<-relevel(data$group,ref="Gratitude"))
+
+#Processing "wide format" into "long format"
+y=c(data$HRTALK1,
+    data$HRTALK2)
+long=data.frame(y)
+
+#Pre or post stress protocol
+long$prepost=c(rep(0,nrow(data)),
+               rep(1,nrow(data)))
+
+#Experimental condition
+long$group=rep(data$group,2)
+
+#Speech prompt
+long$prompt=c(data$PROMPT1,
+              data$PROMPT2)
+long$prompt=as.factor(long$prompt)
+
+#Creating IDs
+long$ID=rep(1:nrow(data),2)
+long$ID=as.factor(long$ID)
+
+#Model estimation
+mod=glmmTMB(y~prepost*group+us(0+as.factor(prepost)|ID)+us(1|prompt),
+            data=long,family=gaussian)
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=mod,
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod)
+
+#Writing the L matrix
+L_Specify(mod=mod,
+          Est_Num=4,
+          type="Mean")
+
+#Copying and pasting the output backup code
+L=cbind(c(1, 0, 0, 0),
+        c(1, 0, 1, 0),
+        c(1, 1, 0, 0),
+        c(1, 1, 1, 1))
+
+Est_Names=c('1. Grat, BL', '2. Ctrl, BL', '3. Grat, FU', '4. Ctrl, FU')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied averages and comparisons
+hat=Est_Mod(mod=mod,
+            L=L,
+            Est_Names=Est_Names,
+            plot=c(1,2,3,4),
+            ylab="Speech Heart Rate",
+            main="Speech Heart Rate by Experimental Condition")
+
+hat=Est_Mod(mod=mod,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(1,2),
+            Print_L=F)
+hat=Est_Mod(mod=mod,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(3,4),
+            Print_L=F)
+
+
+#####Topic 10: Survival Analysis#####
+
+#Reading the data in and calling the code Ray wrote to post process results
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Day_Ten_Data.txt",sep="\t",header=T)
+source("https://raw.githubusercontent.com/JoshuaRayTanzer/Functions/main/Functions.R")
+
+#Processing whether or not a patient had COVID into a factor
+data$COVID_lab=ifelse(data$COVID==1,"COVID","non-COVID")
+data$COVID_lab=as.factor(data$COVID_lab)
+data=within(data, COVID_lab<-relevel(data$COVID_lab,ref="non-COVID"))
+
+#Centering and quadratic trend for baseline lymphocytes
+data$BL_Lymph_c=data$BL_Lymph-mean(data$BL_Lymph)
+data$BL_Lymph_c2=data$BL_Lymph_c^2
+
+#Model estimation
+mod1=coxph(Surv(LOS,Mort1)~BL_Lymph_c*COVID_lab,data=data)
+mod2=coxph(Surv(LOS,Mort1)~BL_Lymph_c*COVID_lab+BL_Lymph_c2*COVID_lab,data=data)
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2))
+
+#Overall model results
+summary(mod1)
+
+#Writing the L matrix
+L_Specify(mod=mod,
+          Est_Num=4,
+          type="Mean")
+
+#Saving work!
+L=cbind(c(-0.35, 0, 0),
+        c(-0.35, 1, -0.35),
+        c(0.15, 0, 0),
+        c(0.15, 1, 0.15))
+
+Est_Names=c('Low Lymphocytes, non-COVID', 'Low Lymphocytes, COVID', 'High Lymphocytes, non-COVID', 'High Lymphocytes, COVID')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod1,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied survival trajectories and comparisons between groups
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(1,2),
+            plot=c(1,2),
+            plot_type="Cox",
+            ylab="Survival (%)",
+            xlab="ICU Stay",
+            main="Survival Analysis of COVID Patients, Low Lymphocytes")
+
+hat=Est_Mod(mod=mod1,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(3,4),
+            plot=c(3,4),
+            plot_type="Cox",
+            ylab="Survival (%)",
+            xlab="ICU Stay",
+            main="Survival Analysis of COVID Patients, High Lymphocytes")
+
+#####Topic 11: Cluster Analysis#####
+#Reading the data in, library statement,
+#and calling the code Ray wrote to post process results
+data=read.table("S:/Ray_R_Tools/Practical_Statistics/Day_Ten_Data.txt",sep="\t",header=T)
+library(glmmTMB)
+source("https://raw.githubusercontent.com/JoshuaRayTanzer/Functions/main/Functions.R")
+
+names(data)
+
+## Creating distance scores
+#Subsetting the variables used in the cluster analysis
+clust_dat=data[,1:11]
+
+#Converting to Z scores
+clust_dat_Z=scale(clust_dat)
+
+#Calculating mahalanobis scores scaled to the variable averages
+#and the correlation matrix
+mahalan=mahalanobis(x=clust_dat_Z,
+                    center=colMeans(clust_dat_Z),
+                    cov=cor(clust_dat_Z))
+
+#Calculating numeric distance between scores
+dist=dist(mahalan)
+
+#Forming clusters
+clust=hclust(dist,method="ward.D")
+
+#Creating the dendrogram
+plot(clust)
+
+#Identifying three groups
+ident=cutree(clust,k=3)
+ident
+
+#Processing data for use with the KAMILA algorithm
+#Continuous data
+con=clust_dat[,1:2]
+
+#Converting into Z scores by subtracting mean and dividing by SD
+con[,1]=(con[,1]-mean(clust_dat[,1]))/sd(clust_dat[,1])
+con[,2]=(con[,2]-mean(clust_dat[,2]))/sd(clust_dat[,2])
+
+#Categorical data
+cat=clust_dat[,3:11]
+
+#Data processing the way the KAMILA algorithm needs
+cat=data.frame(apply(cat,2,factor),stringsAsFactors=T)
+
+#Choosing to extract three groups based on dendrogram
+k=3
+
+#Because KAMILA uses random numbers as starting points,
+#need to set a random number seed to ensure consistency of results
+set.seed(999)
+groups=kamila(conVar=con,
+              catFactor=cat,
+              numClust=k,
+              numInit=10)$finalMemb
+groups
+
+#To keep organized, a tool to make clear labels
+#for each variable in the cluster analysis
+Key_Specify(clust_dat)
+
+#Backing up the work with the key
+key=cbind(c('Demographics', 'Demographics', 'Comorbidities', 'Comorbidities', 'Comorbidities', 'Comorbidities', 'Comorbidities', 'Comorbidities', 'Comorbidities', 'Comorbidities', 'Comorbidities'), 
+          c('1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2'), 
+          c('Age (Years)', 'BMI', 'HTN (%)', 'CVD (%)', 'CHF (%)', 'DM (%)', 'COPD (%)', 'Renal Failure (%)', 'Liver Disease (%)', 'Malignancy (%)', 'Immunocomp (%)'), 
+          c('Normal', 'Normal', 'Binomial', 'Binomial', 'Binomial', 'Binomial', 'Binomial', 'Binomial', 'Binomial', 'Binomial', 'Binomial'), 
+          c('0', '2', '0', '0', '0', '0', '0', '0', '0', '0', '0')) 
+
+#A function to summarize the data on each group
+describe_clust(group=groups,
+               data=clust_dat,
+               key=key)
+
+#Creating a principal components analysis (PCA) plot to visualize differences across variables
+#Estimating coefficients to create PCA scores
+W=matrix(
+  prcomp(clust_dat,scale=T)[[2]][,1:3],
+  nrow=ncol(clust_dat),ncol=3)
+W
+
+#Scoring the PCA scores by multiplying data by weights
+#Note that this object has 3 columns for the first 3 PCA scores
+Z=clust_dat_Z%*%W
+
+#Adding in the cluster IDs
+Z=cbind(Z,groups)
+Z=data.frame(Z)
+colnames(Z)=c("PCA1","PCA2","PCA3","Cluster")
+
+#Starting a plot with labels and axes that will represent all points
+plot(x=Z[,1],
+     y=Z[,2],
+     xlab="PCA 1",
+     ylab="PCA 2",
+     main="PCA Plot of Clusters")
+
+#Plotting accident group in red
+points(x=Z[groups==1,1],
+       y=Z[groups==1,2],
+       col="red")
+#Plotting metabolic disease group in blue
+points(x=Z[groups==2,1],
+       y=Z[groups==2,2],
+       col="blue")
+#Plotting sickly patients in yellow
+points(x=Z[groups==3,1],
+       y=Z[groups==3,2],
+       col="yellow")
+
+#For fun, creating a 3-D plot using the first three principal components scores!
+library(plotly)
+
+fig=plot_ly(Z,x=~PCA1,
+            y=~PCA2,
+            z=~PCA3,
+            color=~Cluster,
+            colors=c('Red','Blue','Yellow'))
+fig=fig %>%add_markers()
+fig=fig%>%layout(scene=list(xaxis=list(title='PCA1'),
+                            yaxis=list(title='PCA2'),
+                            zaxis=list(title='PCA3')))
+fig
+
+#Processing cluster identities as a factor
+data$Group=as.factor(data$Group)
+data=within(data, Cluster<-relevel(data$Group,ref="Accident"))
+
+#Converting data from wide to long
+#Outcome variable
+y=c(data$BL_Lymph,
+    data$Lymph_1,
+    data$Lymph_3)
+
+long=data.frame(y)
+
+#Group identities
+long$Group=rep(data$Group,3)
+
+#Individual IDs
+long$ID=rep(1:nrow(data),3)
+long$ID=as.factor(long$ID)
+
+#Time as a number
+long$time_num=c(rep(0,nrow(data)),
+                rep(1,nrow(data)),
+                rep(3,nrow(data)))
+
+#Quadratic possibility
+long$time_num2=long$time_num^2
+
+#Time as a factor
+time_f=c(rep(1,nrow(data)),
+         rep(2,nrow(data)),
+         rep(3,nrow(data)))
+time_f=as.factor(time_f)
+
+
+#Model estimation
+mod1=glmmTMB(y~Group*time_f+cs(0+time_f|ID),data=long,family="gaussian"(link="identity"))
+mod2=glmmTMB(y~Group*time_f+cs(0+time_f|ID),data=long,family="gaussian"(link="log"))
+mod3=glmmTMB(y~Group*time_f+cs(0+time_f|ID),data=long,family="Gamma"(link="log"))
+mod4=glmmTMB(y~Group*time_num+cs(0+time_f|ID),data=long,family="gaussian"(link="identity"))
+mod5=glmmTMB(y~Group*time_num+cs(0+time_f|ID),data=long,family="gaussian"(link="log"))
+mod6=glmmTMB(y~Group*time_num+cs(0+time_f|ID),data=long,family="Gamma"(link="log"))
+mod7=glmmTMB(y~Group*time_num+Group*time_num2+cs(0+time_f|ID),data=long,family="gaussian"(link="identity"))
+mod8=glmmTMB(y~Group*time_num+Group*time_num2+cs(0+time_f|ID),data=long,family="gaussian"(link="log"))
+mod9=glmmTMB(y~Group*time_num+Group*time_num2+cs(0+time_f|ID),data=long,family="Gamma"(link="log"))
+
+#Evaluating residuals and model fit statistics
+inspect_mods(mod=list(mod1,mod2,mod3,mod4,mod5,mod6,mod7,mod8,mod9),
+             Plots=c("Histogram","QQ"))
+
+#Overall model results
+summary(mod5)
+
+#Writing L matrices for each group
+L_Specify(mod=mod5,
+          Est_Num=9,
+          type="Mean")
+
+#Backing up work
+L=cbind(c(1, 0, 0, 0, 0, 0),
+        c(1, 0, 0, 1, 0, 0),
+        c(1, 0, 0, 3, 0, 0),
+        c(1, 1, 0, 0, 0, 0),
+        c(1, 1, 0, 1, 1, 0),
+        c(1, 1, 0, 3, 3, 0),
+        c(1, 0, 1, 0, 0, 0),
+        c(1, 0, 1, 1, 0, 1),
+        c(1, 0, 1, 3, 0, 3))
+
+Est_Names=c('Accident, BL', 'Accident, Day 1', 'Accident, Day 3', 'Metabolic, BL', 'Metabolic, Day 1', 'Metabolic, Day 3', 'Sickly, BL', 'Sickly, Day 1', 'Sickly, Day 3')
+
+#Evaluating estimate reliability
+h=df_L(mod=mod5,
+       L=L,
+       Est_Names=Est_Names)
+
+#Extracting model implied average risk and comparisons
+hat=Est_Mod(mod=mod5,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(1,3),
+            plot=c(1:3),
+            plot_type="line",
+            link="log",
+            ylab="Lymphocyte Level",
+            xlab="Day of ICU Stay",
+            main="Changes in Lymphocytes, Accident Patients")
+
+hat=Est_Mod(mod=mod5,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(4,6),
+            plot=c(4:6),
+            plot_type="line",
+            link="log",
+            ylab="Lymphocyte Level",
+            xlab="Day of ICU Stay",
+            main="Changes in Lymphocytes, Metabolic Patients")
+
+hat=Est_Mod(mod=mod5,
+            L=L,
+            Est_Names=Est_Names,
+            diff=c(7,9),
+            plot=c(7:9),
+            plot_type="line",
+            link="log",
+            ylab="Lymphocyte Level",
+            xlab="Day of ICU Stay",
+            main="Changes in Lymphocytes, Sickly Patients")
+
